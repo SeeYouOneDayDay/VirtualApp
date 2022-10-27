@@ -1,6 +1,5 @@
 # VirtualApp技术黑产利用研究报告
-
-一、 前言
+## **一、 前言**
 
 **VirtualApp（以下称 VA）是一个 App 虚拟化引擎（简称 VA）。VirtualApp 创建了一个虚拟空间，你可以在虚拟空间内任意的安装、启动和卸载 APK，这一切都与外部隔离，如同一个沙盒。运行在 VA 中的 APK 无需在 Android 系统中安装即可运行，也就是我们熟知的多开应用。**
 
@@ -8,29 +7,17 @@ VA 免安装运行 APK 的特性使得 VA 内应用与 VA 相比具有不同的�
 
 本报告首先简要介绍 VA 的多开实现原理，之后分析目前在灰色产业的应用，针对在免杀的应用，安全云对此的应对，并给出色情应用作为例子。另一方面，通过对样本分析，展示了 VA 对于安装在其内应用的高度控制能力，及其带来的安全风险。最后对本报告进行总结。
 
-二、 VirtualApp 原理
+## **二、 VirtualApp 原理**
 
 Android 应用启动 Activity 时，无论通过何种 API 调用，最终会调用到 ActivityManager.startActivity() 方法。该调用为远程 Binder 服务 (加速该调用，Android 应用会先在本地进程查找 Binder 服务缓存，如果找到，则直接调用。VA 介入了该调用过程，通过以下方式：
 
-\1. 替换本地的 ActivityManagerServise Binder 服务为 VA 构造的代理对象，以接管该调用。这一步通过反射实现。
-\2. 接管后，当调用 startActivity 启动多开应用时，VA 修改 Intent 中的 Activity 为 VA 中己声明的占位 Activity。这一步的目的是绕过 Android 无法启动未在 AndroidManifest.xml 中声明 Activity 的限制。
-\3. 在被多开应用进程启动后，增加 ActivityThread.mH.mCallback 的消息处理回调。这一步接管了多开应用主线程的消息回调。
+1. 替换本地的 ActivityManagerServise Binder 服务为 VA 构造的代理对象，以接管该调用。这一步通过反射实现。 2. 接管后，当调用 startActivity 启动多开应用时，VA 修改 Intent 中的 Activity 为 VA 中己声明的占位 Activity。这一步的目的是绕过 Android 无法启动未在 AndroidManifest.xml 中声明 Activity 的限制。 3. 在被多开应用进程启动后，增加 ActivityThread.mH.mCallback 的消息处理回调。这一步接管了多开应用主线程的消息回调。
 
 在以上修改的基础上，多开应用的 Activity 启动过程可分为以下两步骤：
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558296.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558296.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018618.jpeg)
 
 
 
@@ -38,17 +25,7 @@ Android 应用启动 Activity 时，无论通过何种 API 调用，最终会调
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558304.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558304.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018627.jpeg)
 
 
 
@@ -64,7 +41,9 @@ VApp：被多开应用所在的进程，该进程实际为 VA 派生的进程。
 
 以上是启动过程的简化描述，实际上，VA 对大量 Android 系统 API 进行了 Hook，这使得运行在其中的应用在 VA 的控制下，为 VA 的应用带来可能性。
 
-三、 在灰色产业的应用 3.1 免杀
+## **三、 在灰色产业的应用**
+
+### **3.1 免杀**
 
 VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的静态特征被掩盖，目前己有恶意应用使用 VA 对自身重打包，重打包后的应用包名、软件名与原应用不同，从而实现免杀。安全云使用动态检测关联恶意应用和 VA 的方式应对该免杀技术。
 
@@ -76,17 +55,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558302.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558302.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018631.jpeg)
 
 
 
@@ -98,17 +67,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558317.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558317.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018638.jpeg)
 
 
 
@@ -116,17 +75,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558315.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558315.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018645.jpeg)
 
 
 
@@ -136,17 +85,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151559132.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151559042.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018670.jpeg)
 
 
 
@@ -154,17 +93,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558319.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558319.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018964.jpeg)
 
 
 
@@ -172,59 +101,29 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151600968.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018280.jpeg)
 
 
 
+读取用户[短信](https://cloud.tencent.com/product/sms?from=10680)收件箱：
 
 
 
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151600968.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018690.jpeg)
 
 
 
-
-读取用户短信收件箱：
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558721.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
+并且可以通过远程[服务器](https://cloud.tencent.com/product/cvm?from=10680)控制应用是否运行，控制支付宝和微信支付的开启以逃避支付平台打击：
 
 
 
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558721.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-并且可以通过远程服务器控制应用是否运行，控制支付宝和微信支付的开启以逃避支付平台打击：
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151600524.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151600524.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/0xie1xu3rg.jpeg)
 
 
 
 目前该类色情应用的 VA 母包和子包均己被标记为灰色。
 
-3.2 重打包
+### **3.2 重打包**
 
 相较于以往反编译后插入代码进行打包编译的方式，使用 VA 进行重打包具有以下优点：
 
@@ -248,17 +147,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558648.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558648.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018176.jpeg)
 
 
 
@@ -274,17 +163,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558794.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558794.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018528.jpeg)
 
 
 
@@ -292,17 +171,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558299.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558299.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018836.jpeg)
 
 
 
@@ -312,17 +181,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558798.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558798.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/6ptt8wmixi.jpeg)
 
 
 
@@ -332,17 +191,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558828.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558828.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018056.jpeg)
 
 
 
@@ -350,59 +199,29 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 可对运行在 VA 内的应用进行点击。
 
-\1) 当 VA 内应用启动时注册 Broadcast Receiver：
+1) 当 VA 内应用启动时注册 Broadcast Receiver：
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151600058.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018102.jpeg)
 
 
 
+2) 接收服务器脚本，发送广播
 
 
 
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151600058.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018946.jpeg)
 
 
 
-
-\2) 接收服务器脚本，发送广播
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558865.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558865.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-\3) 执行点击脚本
+3) 执行点击脚本
 
 （1） 获得 DecorViews，该 View 为 Android 应用的底层 View。因为被多开的应用跑在 VA 内，因此 VA 有权限对应用类进行操作。
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558368.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558368.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018596.jpeg)
 
 
 
@@ -410,17 +229,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558714.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151601260.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/mzeu415m9f.jpeg)
 
 
 
@@ -428,17 +237,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558935.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558935.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/ib4cgm1ase.jpeg)
 
 
 
@@ -448,17 +247,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558658.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558658.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018514.jpeg)
 
 
 
@@ -466,17 +255,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558774.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558774.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018142.jpeg)
 
 
 
@@ -484,15 +263,7 @@ VA 等多开工具将 Android 系统与 VA 内的应用隔离，使得应用的�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151601915.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151601085.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018213.jpeg)
 
 
 
@@ -502,33 +273,13 @@ VA 对 Activity 的生命周期函数进行了 Hook，因此可以方便地在 A
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558793.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018472.jpeg)
 
 
 
 
 
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558793.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558981.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558981.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018340.jpeg)
 
 
 
@@ -536,17 +287,7 @@ VA 对 Activity 的生命周期函数进行了 Hook，因此可以方便地在 A
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558287.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558287.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018382.jpeg)
 
 
 
@@ -556,50 +297,27 @@ VA 对 Activity 的生命周期函数进行了 Hook，因此可以方便地在 A
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151601600.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018396.jpeg)
 
 
 
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151602828.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-3.3 免 Root Hook
-
-
+### **3.3 免 Root Hook**
 
 VA 可在应用 Application 类创建时执行代码，这些代码先于应用执行。通过结合 Hook 框架（如 YAHFA、AndFix）、VA 可以方便对应用进行 Hook，其 Hook 能力与 Xposed 框架等同。与 Xposed 框架比较如表所示：
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558715.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558715.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018952.jpeg)
 
 
 
 相较于 Xposed 框架，通过此方式 Hook 具有如下优点：
 
-\1. 不需要 Root 权限
-\2. 不需要重启系统就可以重新加载 Hook 代码，重启应用即可
-\3. 可与 Native Hook 框架结合，Hook 二进制库。实际上 VA 本身己使用 Native Hook 框架对应用的 IO 操作进行了重定向
+\1. 不需要 Root 权限 2. 不需要重启系统就可以重新加载 Hook 代码，重启应用即可 3. 可与 Native Hook 框架结合，Hook 二进制库。实际上 VA 本身己使用 Native Hook 框架对应用的 IO 操作进行了重定向
 
 VA 的免 Root Hook 能力对于被多开应用是一种安全威胁。VA 可做到的包括但不限于：
 
-\1. Hook 密码相关函数，截取用户输入的密码
-\2. Hook 网络通信函数，监听网络通信
-\3. Hook Android API。伪造 Android 设备信息、GPS 定位记录等。
+\1. Hook 密码相关函数，截取用户输入的密码 2. Hook 网络通信函数，监听网络通信 3. Hook Android API。伪造 Android 设备信息、GPS 定位记录等。
 
 下面分析某微信抢红包应用，以展示 VA 免 Root Hook 的能力。
 
@@ -611,17 +329,7 @@ VA 实现了插件化的注入模块，其中一个注入模块为 FixBug_AppIns
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558143.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558143.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018826.jpeg)
 
 
 
@@ -629,17 +337,7 @@ mInstrumentation 对象会在应用 Application 类及 Activity 类创建时被�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558879.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558879.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018093.jpeg)
 
 
 
@@ -649,17 +347,7 @@ mInstrumentation 对象会在应用 Application 类及 Activity 类创建时被�
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558938.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558938.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202210271018374.jpeg)
 
 
 
@@ -671,17 +359,7 @@ LuckMoneyMethProxy.a() 为替换后的函数，当微信接收到消息时被调
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558549.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558549.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/tlva9lt3lw.jpeg)
 
 
 
@@ -693,41 +371,30 @@ LuckMoneyMethProxy.a() 为替换后的函数，当微信接收到消息时被调
 
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558568.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558568.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/nejiqkbapo.jpeg)
 
 
 
 onLuckyMoneyResume 根据版本号确定要反射调用的 “拆开红包按钮”（包括 BUTTON_OPEN、OBJECT_OPEN、METHOD_OPEN）
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151602036.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
 
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/t0lanq47rm.jpeg)
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151602283.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
 
 
 最终由 MonitorHandler 反射调用拆开红包函数：
 
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558271.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
 
-![img](https://raw.githubusercontent.com/hhhaiai/Picture/main/img/202206151558271.jpg%2526thumbnail%253D660x2147483647%2526quality%253D80%2526type%253Djpg)
-
-
-四、 总结
+![img](https://ask.qcloudimg.com/http-save/yehe-1268449/oen3hv3y4b.jpeg)
 
 
+
+## **四、 总结**
 
 VirtualApp 作为开源的多开应用框架，可以被任何人使用。它在 Android 系统和被多开应用间增加了中间层。这带来了两方面问题，一方面，VA 可掩盖应用的静态特征（包名、证书、资源文件、代码等），使得单纯的静态检测方法失效，应用具有了一定免杀的能力。同一个恶意应用可以有众多 VA 母包，且母包不包含恶意特征，这给检测引擎识别恶意应用带来了难度。安全云通过动态检测在 VA 母包运行时动态提取 VA 应用中的子包，并结合子包的恶意情况对母包的恶意情况进行综合判定，可有效对恶意应用的 VA 母包进行标记查杀。
 
 另一方面，由于多开应用运行在 VA 中，VA 对被多开应用具有不弱于 Root 的权限，可方便有效介入应用运行流程。例如：当应用运行时展示广告，对多开应用进行截屏、模拟点击。更进一步的，VA 可通过 Hook 修改应用的执行流程，获得应用的隐私数据，包括但不限于密码、与服务器的数据通信、照片等。应用应当对运行在 VA 或其他多开应用内的带来的安全风险有所了解并加以防范，特别是金融、通讯类应用。
 
 安全云己对相关 VA 应用进行监测，并及时对新型安全威胁作出响应。
-
-*** 本文作者：腾讯手机管家，转载请注明来自 FreeBuf.COM**
-
-特别声明：以上内容 (如有图片或视频亦包括在内) 为自媒体平台 “网易号” 用户上传并发布，本平台仅提供信息存储服务。
